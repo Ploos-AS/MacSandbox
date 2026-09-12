@@ -1,0 +1,22 @@
+name: MacSandbox M1.1
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  runtime-adapter:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: M0 qualification
+        run: python3 tools/check_m0.py
+      - name: M1 analysis contract tests
+        run: python3 tests/test_m1_analysis.py
+      - name: M1.1 runtime adapter qualification
+        run: python3 tests/test_m1_1_runtime.py
