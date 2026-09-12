@@ -23,6 +23,8 @@
 #ifndef UAE_MEMORY_H
 #define UAE_MEMORY_H
 
+#include "../macsandbox_analysis.h"
+
 #if !DIRECT_ADDRESSING && !REAL_ADDRESSING
 
 /* Enabling this adds one additional native memory reference per 68k memory
@@ -149,16 +151,19 @@ static __inline__ uae_u32 get_byte(uaecptr addr)
 }
 static __inline__ void put_long(uaecptr addr, uae_u32 l)
 {
+    MacSandbox_RecordMemoryWrite((uint32_t)addr, 4, (uint32_t)l);
     uae_u32 * const m = (uae_u32 *)do_get_real_address(addr);
     do_put_mem_long(m, l);
 }
 static __inline__ void put_word(uaecptr addr, uae_u32 w)
 {
+    MacSandbox_RecordMemoryWrite((uint32_t)addr, 2, (uint32_t)w);
     uae_u16 * const m = (uae_u16 *)do_get_real_address(addr);
     do_put_mem_word(m, w);
 }
 static __inline__ void put_byte(uaecptr addr, uae_u32 b)
 {
+    MacSandbox_RecordMemoryWrite((uint32_t)addr, 1, (uint32_t)b);
     uae_u8 * const m = (uae_u8 *)do_get_real_address(addr);
     do_put_mem_byte(m, b);
 }
@@ -185,14 +190,17 @@ static __inline__ uae_u32 get_byte(uaecptr addr)
 }
 static __inline__ void put_long(uaecptr addr, uae_u32 l)
 {
+    MacSandbox_RecordMemoryWrite((uint32_t)addr, 4, (uint32_t)l);
     longput_1(addr, l);
 }
 static __inline__ void put_word(uaecptr addr, uae_u32 w)
 {
+    MacSandbox_RecordMemoryWrite((uint32_t)addr, 2, (uint32_t)w);
     wordput_1(addr, w);
 }
 static __inline__ void put_byte(uaecptr addr, uae_u32 b)
 {
+    MacSandbox_RecordMemoryWrite((uint32_t)addr, 1, (uint32_t)b);
     byteput_1(addr, b);
 }
 static __inline__ uae_u8 *get_real_address(uaecptr addr)
@@ -204,4 +212,3 @@ extern uae_u32 get_virtual_address(uae_u8 *addr);
 #endif /* DIRECT_ADDRESSING || REAL_ADDRESSING */
 
 #endif /* MEMORY_H */
-
