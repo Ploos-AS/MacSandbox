@@ -1,0 +1,58 @@
+name: MacSandbox M1
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  qualify-m1:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: M0 foundation gate
+        run: python3 tools/check_m0.py
+
+      - name: M1 unit tests
+        run: python3 -m unittest tests/test_m1_analysis.py -v
+
+      - name: Generate harmless M1 evidence
+        run: |
+          rm -rf /tmp/macsandbox-m1
+          python3 tools/macsandbox_run.py \
+            --analysis-dir /tmp/macsandbox-m1 \
+            --machine-profile macii-contract-ci \
+            --config-fingerprint github-actions-m1 \
+            --backend-revision "${GITHUB_SHA}" \
+            --rom-sha256 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+            --system-software-id ci-placeholder-no-proprietary-assets \
+            --system-software-sha256 bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb \
+            /bin/true
+
+      - name: Validate evidence
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('/tmp/macsandbox-m1')
+          session = json.loads((root / 'session.json').read_text())
+          events = [json.loads(x) for x in (root / 'events.jsonl').read_text().splitlines()]
+          assert session['schema'] == 'macsandbox.session/1'
+          assert session['backend'] == 'basiliskii'
+          assert session['network'] == 'disabled'
+          assert session['host_shared_folders'] == 'disabled'
+          assert session['jit'] == 'disabled'
+          assert session['exit_code'] == 0
+          assert [e['type'] for e in events] == ['session.start', 'session.stop']
+          assert all(e['schema'] == 'macsandbox.event/1' for e in events)
+          PY
+
+      - name: Upload M1 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: macsandbox-m1-evidence
+          path: /tmp/macsandbox-m1/
+          if-no-files-found: error
