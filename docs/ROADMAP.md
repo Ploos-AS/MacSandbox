@@ -25,10 +25,33 @@
 
 ## M2 — CPU and exception evidence
 
-- periodic 68k register snapshots
-- PC/SR capture
-- exception/vector observations
-- bounded sampling and event volume
+Implemented foundation:
+
+- bounded 68k register snapshots (D0-D7, A0-A7, PC, SR)
+- reset-state snapshot
+- interrupt-request observations
+- Mac 68k Toolbox/trap observations
+- versioned `macsandbox.event/1` core evidence
+- host-side event-volume limit
+
+Remaining refinement:
+
+- direct UAE `Exception()` vector-entry instrumentation for complete exception coverage
+- periodic sampling policy beyond event-triggered snapshots
+- lawful real-runtime qualification with visible Macintosh boot
+
+## M2.1 — Memory-write/watchpoint evidence
+
+Implemented foundation:
+
+- CPU-visible byte/word/long guest memory-write events
+- write address, width, value and CPU register context
+- configurable `MACSANDBOX_WATCH_START` / `MACSANDBOX_WATCH_END`
+- bounded `MACSANDBOX_EVENT_LIMIT`
+- raw `core-events.jsonl` plus merged ASW-consumable `events.jsonl`
+- local qualification gate requiring both CPU/trap and memory-write evidence
+
+Public CI validates the evidence contract without Apple assets. Full runtime PASS remains gated on lawful local Macintosh ROM/System Software and visible guest boot confirmation.
 
 ## M3 — Macintosh OS behavior evidence
 
