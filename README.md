@@ -1,109 +1,81 @@
-#### BasiliskII
+# MacSandbox
+
+**MacSandbox — Basilisk II Malware Analysis Edition**
+
+MacSandbox is a malware-analysis-oriented derivative of the macemu/Basilisk II codebase for classic **68k Macintosh** systems. The inherited macemu tree also contains SheepShaver and cxmon, but the initial MacSandbox analysis backend is deliberately scoped to Basilisk II and 68k Macintosh.
+
+The project is intended to become the `mac68k` runtime backend for ASW Core. M0 establishes provenance, safety boundaries, evidence contracts and the roadmap; it does **not** yet claim hostile-sample runtime qualification.
+
+Key M0 rules:
+
+- external guest networking disabled by default in future analysis mode
+- no broad writable host shared folders
+- disposable writable guest media
+- explicit sample ingress and artifact egress
+- exact emulator revision/build recorded
+- exact ROM and System Software identities/hashes recorded
+- Apple ROM/System Software assets are not committed to this repository
+- minimum future evidence is `session.json` plus `events.jsonl`
+- physical runtime claims require visible local qualification
+
+See `docs/M0_FOUNDATION.md`, `docs/SAFETY.md` and `docs/ROADMAP.md`.
+
+## Upstream provenance
+
+MacSandbox tracks the `kanjitalk755/macemu` lineage. The M0 baseline is commit `892eeb74ab9d70dfb034138a0b39057b14f275bc`. Upstream licensing and notices remain authoritative for inherited code.
+
+## Qualification
+
+```sh
+python3 tools/check_m0.py
 ```
+
+## Upstream build notes
+
+### BasiliskII
+
+```text
 macOS     x86_64 JIT / arm64 non-JIT
 Linux x86 x86_64 JIT / arm64 non-JIT
 MinGW x86        JIT
 ```
-#### SheepShaver
-```
+
+### SheepShaver
+
+```text
 macOS     x86_64 JIT / arm64 non-JIT
 Linux x86 x86_64 JIT / arm64 non-JIT
 MinGW x86        JIT
 ```
-### How To Build
-These builds need to be installed SDL2.0.14+ framework/library.
 
-https://www.libsdl.org
-#### BasiliskII
-##### macOS
-preparation:
+These builds need SDL 2.0.14+ framework/library.
 
-Download gmp-6.2.1.tar.xz from https://gmplib.org.
-```
-$ cd ~/Downloads
-$ tar xf gmp-6.2.1.tar.xz
-$ cd gmp-6.2.1
-$ ./configure --disable-shared
-$ make
-$ make check
-$ sudo make install
-```
-Download mpfr-4.2.0.tar.xz from https://www.mpfr.org.
-```
-$ cd ~/Downloads
-$ tar xf mpfr-4.2.0.tar.xz
-$ cd mpfr-4.2.0
-$ ./configure --disable-shared
-$ make
-$ make check
-$ sudo make install
-```
-On an Intel Mac, the libraries should be cross-built.  
-Change the `configure` command for both GMP and MPFR as follows, and ignore the `make check` command:
-```
-$ CFLAGS="-arch arm64" CXXFLAGS="$CFLAGS" ./configure -host=aarch64-apple-darwin --disable-shared 
-```
-(from https://github.com/kanjitalk755/macemu/pull/96)
+### BasiliskII — Linux
 
-about changing Deployment Target:  
-If you build with an older version of Xcode, you can change Deployment Target to the minimum it supports or 10.7, whichever is greater.
+On arm64, install GMP and MPFR first.
 
-build:
-```
-$ cd macemu/BasiliskII/src/MacOSX
-$ xcodebuild build -project BasiliskII.xcodeproj -configuration Release
+```sh
+cd BasiliskII/src/Unix
+./autogen.sh
+make
 ```
 
-##### Linux
-preparation (arm64 only): Install GMP and MPFR.
-```
-$ cd macemu/BasiliskII/src/Unix
-$ ./autogen.sh
-$ make
-```
-##### MinGW32/MSYS2
-preparation:
-```
-$ pacman -S base-devel mingw-w64-i686-toolchain autoconf automake mingw-w64-i686-SDL2
-```
-note: MinGW32 dropped GTK2 package.
-See msys2/MINGW-packages#24490
+### BasiliskII — macOS
 
-build (from a mingw32.exe prompt):
-```
-$ cd macemu/BasiliskII/src/Windows
-$ ../Unix/autogen.sh
-$ make
-```
-#### SheepShaver
-##### macOS
-about changing Deployment Target: see BasiliskII
-```
-$ cd macemu/SheepShaver/src/MacOSX
-$ xcodebuild build -project SheepShaver_Xcode8.xcodeproj -configuration Release
+Install required GMP/MPFR libraries, then:
+
+```sh
+cd BasiliskII/src/MacOSX
+xcodebuild build -project BasiliskII.xcodeproj -configuration Release
 ```
 
-##### Linux
-```
-$ cd macemu/SheepShaver/src/Unix
-$ ./autogen.sh
-$ make
-```
-For Raspberry Pi:
-https://github.com/vaccinemedia/macemu
+### BasiliskII — MinGW32/MSYS2
 
-##### MinGW32/MSYS2
-preparation: same as BasiliskII  
-  
-build (from a mingw32.exe prompt):
+```sh
+pacman -S base-devel mingw-w64-i686-toolchain autoconf automake mingw-w64-i686-SDL2
+cd BasiliskII/src/Windows
+../Unix/autogen.sh
+make
 ```
-$ cd macemu/SheepShaver
-$ make links
-$ cd src/Windows
-$ ../Unix/autogen.sh
-$ make
-```
-### Recommended key bindings for gnome
-https://github.com/kanjitalk755/macemu/blob/master/SheepShaver/doc/Linux/gnome_keybindings.txt
 
-(from https://github.com/kanjitalk755/macemu/issues/59)
+SheepShaver remains inherited upstream functionality and is not part of the initial MacSandbox 68k malware-analysis qualification path.
