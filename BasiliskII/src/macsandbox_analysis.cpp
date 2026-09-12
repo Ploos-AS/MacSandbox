@@ -110,6 +110,8 @@ void MacSandbox_RecordInterrupt(unsigned int level)
 void MacSandbox_RecordMemoryWrite(uint32_t address, unsigned int size, uint32_t value)
 {
 	FILE *fp;
+	if (!analysis_open())
+		return;
 	if (address < analysis_watch_start || address > analysis_watch_end)
 		return;
 	fp = event_file();
