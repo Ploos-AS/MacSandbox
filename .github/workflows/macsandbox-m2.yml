@@ -1,0 +1,36 @@
+name: MacSandbox M2.1
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  evidence-contract:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: M0 foundation gate
+        run: python3 tools/check_m0.py
+
+      - name: Existing analysis/runtime tests
+        run: |
+          python3 -m unittest tests/test_m1_analysis.py -v
+          python3 -m unittest tests/test_m1_1_runtime.py -v
+
+      - name: M2/M2.1 instrumentation contract
+        run: python3 -m unittest tests/test_m2_1_evidence.py -v
+
+      - name: Verify no Apple runtime assets are committed
+        run: |
+          test ! -e ROM
+          test ! -e "System 7.5.3"
+          test ! -e system753.img
+
+      - name: Report qualification boundary
+        run: |
+          echo 'Public CI validates the M2/M2.1 evidence contract and source hooks.'
+          echo 'Real guest evidence still requires lawful local Macintosh ROM/System Software assets and visible boot qualification.'
