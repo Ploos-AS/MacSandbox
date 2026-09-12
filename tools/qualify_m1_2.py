@@ -44,7 +44,7 @@ def main() -> int:
     rom_hash = sha256(args.rom)
     disk_hash = sha256(args.system_disk)
 
-    with tempfile.TemporaryDirectory(prefix="macsandbox-m1_2-") as td:
+    with tempfile.TemporaryDirectory(prefix="macsandbox-m1_2-"):
         command = [
             sys.executable,
             "tools/macsandbox_basilisk_runtime.py",
@@ -55,8 +55,8 @@ def main() -> int:
             "--rom", str(args.rom),
             "--system-disk", str(args.system_disk),
             "--system-software-id", "Mac OS 7.5.3",
-            "--runtime-timeout", str(args.runtime_timeout),
-            "--basilisk", str(args.basilisk),
+            "--runtime-seconds", str(args.runtime_timeout),
+            "--basilisk-binary", str(args.basilisk),
         ]
         proc = subprocess.run(command, check=False)
         if proc.returncode not in (0, 124):
