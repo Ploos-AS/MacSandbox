@@ -31,6 +31,11 @@
 #include "readcpu.h"
 #include "newcpu.h"
 #include "compiler/compemu.h"
+#include "../macsandbox_analysis.h"
+
+/* Keep the analysis recorder in the UAE CPU object without changing the
+ * upstream-generated CPUSRCS list. */
+#include "../macsandbox_analysis.cpp"
 
 
 // RAM and ROM pointers
@@ -138,6 +143,7 @@ void InitFrameBufferMapping(void)
 void Start680x0(void)
 {
 	m68k_reset();
+	MacSandbox_RecordCpuSnapshot("reset");
 #if USE_JIT
     if (UseJIT)
 	m68k_compile_execute();
@@ -153,6 +159,7 @@ void Start680x0(void)
 
 void TriggerInterrupt(void)
 {
+	MacSandbox_RecordInterrupt(1);
 	idle_resume();
 	SPCFLAGS_SET( SPCFLAG_INT );
 }
@@ -190,6 +197,7 @@ void Execute68kTrap(uint16 trap, struct M68kRegisters *r)
 		m68k_dreg(regs, i) = r->d[i];
 	for (i=0; i<7; i++)
 		m68k_areg(regs, i) = r->a[i];
+	MacSandbox_RecordTrap(trap);
 
 	// Push trap and EXEC_RETURN on stack
 	m68k_areg(regs, 7) -= 2;
